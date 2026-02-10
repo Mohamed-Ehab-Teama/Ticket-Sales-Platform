@@ -8,9 +8,13 @@ use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\TicketTypeController;
 use App\Http\Controllers\Admin\TimeSlotController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Customer\BookingController;
 
+// Route::get('/', function () {
+//     return view('customer.index');
+// });
 Route::get('/', function () {
-    return view('index');
+    return view('welcome');
 });
 
 // ===================================  Breeze
@@ -66,6 +70,21 @@ Route::middleware(['auth', 'can:admin'])
 
 
 
+// ===================================  Customer Routes
+// Route::prefix('guest')->group(function () {
+// });
+
+Route::prefix('book')->name('book.')->group(function () {
+
+    Route::get('/', [BookingController::class, 'index'])->name('index'); // main page
+
+    // AJAX endpoints
+    Route::get('/events', [BookingController::class, 'getEvents'])->name('events');
+    Route::get('/events/{event}/dates', [BookingController::class, 'getDates'])->name('dates');
+    Route::get('/dates/{date}/timeslots', [BookingController::class, 'getTimeSlots'])->name('timeslots');
+    Route::get('/timeslots/{timeslot}/tickets', [BookingController::class, 'getTickets'])->name('tickets');
+});
+// ===================================  Customer Routes
 
 
 require __DIR__ . '/auth.php';

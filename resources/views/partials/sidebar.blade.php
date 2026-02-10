@@ -5,63 +5,89 @@
     </div>
 
     <nav class="sidebar-nav">
-        <div class="nav-section">
-            <div class="nav-section-title">Main</div>
+        @can(['admin'])
+            <div class="nav-section">
+                <div class="nav-section-title">Main</div>
 
-            <div class="nav-item">
-                <a href="{{ route('admin.dashboard') }}"
-                    class="nav-link {{ Route::is('admin.dashboard') ? 'active' : '' }}">
-                    <i class="fas fa-home"></i>
-                    <span>Dashboard</span>
-                </a>
-            </div>
-        </div>
-
-        <div class="nav-section">
-            <div class="nav-section-title">Event Management</div>
-            <div class="nav-item">
-                <a href="{{ route('admin.events.index') }}"
-                    class="nav-link {{ Route::is('admin.events.index') ? 'active' : '' }}">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span>Events</span>
-                    <span class="nav-badge"> {{ App\Models\Event::count() }} </span>
-                </a>
-            </div>
-
-            <div class="nav-item">
-                {{-- <a href="{{ route('admin.dates.index') }}"
-                    class="nav-link {{ Route::is('admin.dates.index') ? 'active' : '' }}"> --}}
-                    <a class="nav-link {{ Route::is('admin.dates.index') ? 'active' : '' }}">
-                        <i class="fas fa-calendar-day"></i>
-                        <span>Dates</span>
+                <div class="nav-item">
+                    <a href="{{ route('admin.dashboard') }}"
+                        class="nav-link {{ Route::is('admin.dashboard') ? 'active' : '' }}">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
                     </a>
+                </div>
             </div>
 
-            <div class="nav-item">
-                <a class="nav-link {{ Route::is('admin.dates.time-slots.index') ? 'active' : '' }}">
-                    <i class="fas fa-clock"></i>
-                    <span>Time Slots</span>
-                </a>
+            <div class="nav-section">
+                <div class="nav-section-title">Event Management</div>
+                <div class="nav-item">
+                    <a href="{{ route('admin.events.index') }}"
+                        class="nav-link {{ Route::is('admin.events.index') ? 'active' : '' }}">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Events</span>
+                        <span class="nav-badge"> {{ App\Models\Event::count() }} </span>
+                    </a>
+                </div>
+
+                <div class="nav-item">
+                    {{-- <a href="{{ route('admin.dates.index') }}"
+                        class="nav-link {{ Route::is('admin.dates.index') ? 'active' : '' }}"> --}}
+                        <a class="nav-link {{ Route::is('admin.dates.index') ? 'active' : '' }}">
+                            <i class="fas fa-calendar-day"></i>
+                            <span>Dates</span>
+                        </a>
+                </div>
+
+                <div class="nav-item">
+                    <a class="nav-link {{ Route::is('admin.dates.time-slots.index') ? 'active' : '' }}">
+                        <i class="fas fa-clock"></i>
+                        <span>Time Slots</span>
+                    </a>
+                </div>
+
+                <div class="nav-item">
+                    <a class="nav-link {{ Route::is('admin.ticket-type.index') ? 'active' : '' }}">
+                        <i class="fas fa-ticket-alt"></i>
+                        <span>Ticket Types</span>
+                    </a>
+                </div>
             </div>
 
-            <div class="nav-item">
-                <a class="nav-link {{ Route::is('admin.ticket-type.index') ? 'active' : '' }}">
-                    <i class="fas fa-ticket-alt"></i>
-                    <span>Ticket Types</span>
-                </a>
+            <div class="nav-section">
+                <div class="nav-section-title">Invntory</div>
+                <div class="nav-item">
+                    <a href="{{ route('admin.inventories.index') }}"
+                        class="nav-link {{ Route::is('admin.inventories.index') ? 'active' : '' }}">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Tickets Inventory</span>
+                    </a>
+                </div>
             </div>
-        </div>
 
-        <div class="nav-section">
-            <div class="nav-section-title">Invntory</div>
-            <div class="nav-item">
-                <a href="{{ route('admin.inventories.index') }}"
-                    class="nav-link {{ Route::is('admin.inventories.index') ? 'active' : '' }}">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span>Tickets Inventory</span>
-                </a>
+            <div class="nav-section">
+                <div class="nav-section-title">Invntory</div>
+                <div class="nav-item">
+                    <a href="{{ route('admin.inventories.index') }}"
+                        class="nav-link {{ Route::is('admin.inventories.index') ? 'active' : '' }}">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Tickets Inventory</span>
+                    </a>
+                </div>
             </div>
-        </div>
+        @endcan
+
+        @can(['customer'])
+            <div class="nav-section">
+                <div class="nav-section-title"> Customer </div>
+                <div class="nav-item">
+                    <a href="{{ route('book.index') }}"
+                        class="nav-link {{ Route::is('book.index') ? 'active' : '' }}">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span> Booking </span>
+                    </a>
+                </div>
+            </div>
+        @endcan
 
         {{-- <div class="nav-section">
             <div class="nav-section-title">Sales</div>
