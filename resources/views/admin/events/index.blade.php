@@ -86,6 +86,10 @@
                                     <a class="btn btn-warning btn-sm" href="{{ route('admin.dates.index', $event) }}">
                                         Dates
                                     </a>
+                                    
+                                    <a class="btn btn-info btn-sm" href="{{ route('admin.ticket-type.index', $event) }}">
+                                        Ticket Type
+                                    </a>
 
                                     <button class="btn btn-sm btn-icon btn-edit" data-bs-toggle="modal"
                                         data-bs-target="#editEventModal" onclick="editEvent({{ $event->id }})">

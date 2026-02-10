@@ -13,7 +13,7 @@ class EventDateController extends Controller
     public function index(Event $event)
     {
         $dates = $event->dates()->latest()->paginate(12);
-        return view('admin.events-dates.index', compact('event', 'dates'));
+        return view('admin.event-dates.index', compact('event', 'dates'));
     }
 
 
@@ -50,7 +50,7 @@ class EventDateController extends Controller
     }
 
 
-    public function edit(EventDate $date)
+    public function edit(Event $event, EventDate $date)
     {
         return response()->json($date);
     }

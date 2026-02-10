@@ -46,6 +46,7 @@ Route::middleware(['auth', 'can:admin'])
                 ->except(['create', 'show']);     // New Learned
 
             Route::resource('ticket-type', TicketTypeController::class)
+                ->parameters(['ticket-type' => 'ticketType'])
                 ->except(['create', 'show']);
         });
 

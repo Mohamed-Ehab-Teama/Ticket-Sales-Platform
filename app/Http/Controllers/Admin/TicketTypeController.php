@@ -13,7 +13,7 @@ class TicketTypeController extends Controller
     public function index(Event $event)
     {
         $ticketTypes = $event->ticketTypes()->latest()->get();
-        return view('admin.ticket_types.index', compact('event', 'ticketTypes'));
+        return view('admin.ticket-types.index', compact('event', 'ticketTypes'));
     }
 
 
@@ -31,12 +31,14 @@ class TicketTypeController extends Controller
 
         $event->ticketTypes()->create($data);
 
-        return redirect()->route('admin.events.ticket-types.index', $event)
-            ->with('success', 'Ticket type created successfully!');
+        return response()->json([
+            'message'   => 'Ticket type created successfully!',
+            'data'      => $event,
+        ], 201);
     }
 
 
-    public function edit(TicketType $ticketType)
+    public function edit(Event $event, TicketType $ticketType)
     {
         return response()->json($ticketType);
     }
@@ -55,16 +57,20 @@ class TicketTypeController extends Controller
 
         $ticketType->update($data);
 
-        return redirect()->route('admin.events.ticket-types.index', $event)
-            ->with('success', 'Ticket type updated successfully!');
+        return response()->json([
+            'message'   => 'Ticket type updated successfully!',
+            'data'      => $event,
+        ], 201);
     }
 
 
     public function destroy(Event $event, TicketType $ticketType)
     {
         $ticketType->delete();
-        return redirect()->route('admin.events.ticket-types.index', $event)
-            ->with('success', 'Ticket type deleted successfully!');
+        return response()->json([
+            'message'   => 'Ticket type deleted successfully!',
+            'data'      => $event,
+        ], 201);
     }
     // 
 }

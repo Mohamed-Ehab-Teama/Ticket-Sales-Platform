@@ -1,8 +1,8 @@
 @extends('master')
 
-@section('title', 'Events')
-@section('pageTitle', 'Events')
-@section('pageDescription', 'Admin can manage Events Here!')
+@section('title', 'Event Dates')
+@section('pageTitle', 'Event Dates')
+@section('pageDescription', 'Admin can manage Event Dates Here!')
 
 
 @section('content')
@@ -49,41 +49,46 @@
     <!-- Table Card -->
     <div class="table-card">
         <div class="table-card-header">
-            <h2 class="table-card-title">All Events</h2>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createEventModal">
-                <i class="fas fa-plus me-2"></i>Create Event
+            <h2 class="table-card-title">All Event "{{ $event->title }}" Dates</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createDateModal">
+                <i class="fas fa-plus me-2"></i>Create Event Date
             </button>
         </div>
         <div class="table-card-body">
             <table id="eventsTable" class="table table-hover">
                 <thead>
                     <tr>
-                        <th>ID</th>
+                        <th>Event ID</th>
                         <th>Event Title</th>
-                        <th>Event Location</th>
-                        <th>Date</th>
+                        <th>Date ID</th>
+                        <th>Event Date</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($events as $event)
+                    @forelse ($dates as $date)
                         <tr>
-                            <td> {{ $event->id }} </td>
+                            <td> {{ $date->event->id }} </td>
                             <td>
-                                <strong> {{ $event->title }} </strong><br>
-                                <small class="text-muted">{{ $event->description }}</small>
+                                <strong> {{ $date->event->title }} </strong><br>
                             </td>
-                            <td> {{ $event->location }} </td>
-                            <td>
-                                <span class="badge badge-active"> {{ $event->dates()->date }} </span>
-                            </td>
+
+                            <td> {{ $date->id }} </td>
+                            <td> {{ $date->date }} </td>
+
                             <td>
                                 <div class="action-buttons">
+                                    <a class="btn btn-info btn-sm"
+                                        href="{{ route('admin.dates.time-slots.index', [$event, $date]) }}">
+                                        Time Slots
+                                    </a>
+
                                     <button class="btn btn-sm btn-icon btn-edit" data-bs-toggle="modal"
-                                        data-bs-target="#editEventModal" onclick="editEvent({{ $event->id }})">
+                                        data-bs-target="#EditDateModal" onclick="editDate({{ $event->id }}, {{ $date->id }})">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-icon btn-delete" onclick="deleteEvent({{ $event->id }})">
+                                    <button class="btn btn-sm btn-icon btn-delete"
+                                        onclick="deleteDate({{ $event->id }}, {{ $date->id }})">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -107,11 +112,11 @@
 
 @section('modals')
     <!-- Create Event Modal -->
-    @include('admin.events.create-modal')
+    @include('admin.event-dates.create-modal')
 
 
     <!-- Edit Event Modal -->
-    @include('admin.events.edit-modal')
+    @include('admin.event-dates.edit-modal')
 
 @endsection
 
@@ -128,6 +133,11 @@
     */
 
         $(document).ready(function () {
+
+            // let currentDateId = null;
+            // let eventId = $('#event_id').val(); // hidden input
+            let currentEventId = null;
+            let currentDateId = null;
 
             /* ---------------------------------------------------
              | CSRF SETUP
@@ -148,19 +158,19 @@
             /* ---------------------------------------------------
              | CREATE EVENT
              --------------------------------------------------- */
-            $('#createEventForm').on('submit', function (e) {
+            $('#createDateForm').on('submit', function (e) {
                 e.preventDefault();
 
                 let formData = new FormData(this);
 
                 Swal.fire({
-                    title: 'Creating Event...',
+                    title: 'Creating Date...',
                     allowOutsideClick: false,
                     didOpen: () => Swal.showLoading()
                 });
 
                 $.ajax({
-                    url: '/admin/events',
+                    url: '/admin/events/{{ $event->id }}/dates',
                     method: 'POST',
                     data: formData,
                     contentType: false,
@@ -174,8 +184,8 @@
                             showConfirmButton: false
                         });
 
-                        $('#createEventModal').modal('hide');
-                        $('#createEventForm')[0].reset();
+                        $('#createDateModal').modal('hide');
+                        $('#createDateForm')[0].reset();
 
                         setTimeout(() => location.reload(), 1600);
                     },
@@ -193,67 +203,48 @@
             /* ---------------------------------------------------
              | EDIT EVENT (LOAD DATA)
              --------------------------------------------------- */
-            window.editEvent = function (eventId) {
+            window.editDate = function (eventId, dateId) {
+                currentEventId = eventId;
+                currentDateId = dateId;
 
-                Swal.fire({
-                    title: 'Loading...',
-                    allowOutsideClick: false,
-                    didOpen: () => Swal.showLoading()
-                });
+                Swal.fire({ title: 'Loading...', didOpen: () => Swal.showLoading() });
 
-                $.get(`/admin/events/${eventId}/edit`, function (event) {
-
+                $.get(`/admin/events/${eventId}/dates/${dateId}/edit`, function (date) {
                     Swal.close();
 
-                    // $('#editEventModal').modal('show');
-                    currentEventId = event.id;
-
-                    // $('#editEventId').val(event.id);
-                    $('#editEventTitle').val(event.title);
-                    $('#editEventDescription').val(event.description);
-                    $('#editEventLocation').val(event.location);
-                    $('#editEventStatus').val(event.status);
-                })
-                    .fail(function () {
-                        Swal.fire('Error', 'Unable to load event data', 'error');
-                    });
+                    $('#editDate').val(date.date);
+                    $('#EditDateModal').modal('show');
+                });
             };
 
             /* ---------------------------------------------------
              | UPDATE EVENT
              --------------------------------------------------- */
-            $('#editEventForm').on('submit', function (e) {
+            $('#editEventDateForm').on('submit', function (e) {
                 e.preventDefault();
 
                 let eventId = currentEventId;
-                // let eventId = $('#editEventId').val();
+                // let eventId = $('#editEventDateId').val();
                 let formData = new FormData(this);
                 formData.append('_method', 'PUT');
 
                 Swal.fire({
-                    title: 'Updating Event...',
+                    title: 'Updating...',
                     allowOutsideClick: false,
                     didOpen: () => Swal.showLoading()
                 });
 
                 $.ajax({
-                    url: `/admin/events/${eventId}`,
+                    url: `/admin/events/${currentEventId}/dates/${currentDateId}`,
                     method: 'POST',
                     data: formData,
                     contentType: false,
                     processData: false,
 
-                    success: function () {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Event Updated',
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
-
-                        $('#editEventModal').modal('hide');
-
-                        setTimeout(() => location.reload(), 1600);
+                    success: () => {
+                        Swal.fire('Updated!', 'Date updated successfully', 'success');
+                        $('#EditDateModal').modal('hide');
+                        location.reload();
                     },
 
                     error: function (xhr) {
@@ -269,39 +260,25 @@
             /* ---------------------------------------------------
              | DELETE EVENT
              --------------------------------------------------- */
-            window.deleteEvent = function (eventId) {
+            window.deleteDate = function (eventId, dateId) {
+                currentEventId = eventId;
+                currentDateId = dateId;
 
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: "This action cannot be undone!",
+                    title: 'Delete this date?',
                     icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Yes, delete it'
-                }).then((result) => {
+                    showCancelButton: true
+                }).then(result => {
 
                     if (!result.isConfirmed) return;
 
-                    Swal.fire({
-                        title: 'Deleting...',
-                        allowOutsideClick: false,
-                        didOpen: () => Swal.showLoading()
-                    });
-
                     $.ajax({
-                        url: `/admin/events/${eventId}`,
+                        url: `/admin/events/${currentEventId}/dates/${currentDateId}`,
                         method: 'DELETE',
 
-                        success: function () {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Deleted',
-                                timer: 1200,
-                                showConfirmButton: false
-                            });
-
-                            setTimeout(() => location.reload(), 1300);
+                        success: () => {
+                            Swal.fire('Deleted!', 'Date removed', 'success');
+                            location.reload();
                         },
 
                         error: function () {

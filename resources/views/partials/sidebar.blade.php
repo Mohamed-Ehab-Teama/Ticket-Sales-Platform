@@ -22,7 +22,7 @@
                 <a href="{{ route('admin.events.index') }}" class="nav-link {{ Route::is('admin.events.index') ? 'active' : '' }}">
                     <i class="fas fa-calendar-alt"></i>
                     <span>Events</span>
-                    <span class="nav-badge">24</span>
+                    <span class="nav-badge"> {{ App\Models\Event::count() }} </span>
                 </a>
             </div>
 
@@ -33,21 +33,23 @@
                     <span>Dates</span>
                 </a>
             </div>
+
             <div class="nav-item">
-                <a href="#" class="nav-link">
+                <a class="nav-link {{ Route::is('admin.dates.time-slots.index') ? 'active' : '' }}">
                     <i class="fas fa-clock"></i>
                     <span>Time Slots</span>
                 </a>
             </div>
+
             <div class="nav-item">
-                <a href="#" class="nav-link">
+                <a class="nav-link {{ Route::is('admin.ticket-type.index') ? 'active' : '' }}">
                     <i class="fas fa-ticket-alt"></i>
                     <span>Ticket Types</span>
                 </a>
             </div>
         </div>
 
-        <div class="nav-section">
+        {{-- <div class="nav-section">
             <div class="nav-section-title">Sales</div>
             <div class="nav-item">
                 <a href="#" class="nav-link">
@@ -116,6 +118,6 @@
                     <span>Users & Roles</span>
                 </a>
             </div>
-        </div>
+        </div> --}}
     </nav>
 </div>
