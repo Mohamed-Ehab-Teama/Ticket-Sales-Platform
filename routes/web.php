@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\EventDateController;
+use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\TicketTypeController;
 use App\Http\Controllers\Admin\TimeSlotController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -49,6 +50,12 @@ Route::middleware(['auth', 'can:admin'])
                 ->parameters(['ticket-type' => 'ticketType'])
                 ->except(['create', 'show']);
         });
+
+
+        Route::get('/inventories', [InventoryController::class, 'index'])
+            ->name('inventories.index');
+        Route::patch('inventories/{inventory}/update-quantity', [InventoryController::class, 'updateQuantity'])
+            ->name('inventories.updateQuantity');
 
 
 

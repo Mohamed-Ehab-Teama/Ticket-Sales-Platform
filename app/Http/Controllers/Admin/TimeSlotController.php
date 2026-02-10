@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\EventDate;
 use App\Models\TimeSlot;
+use App\Services\InventoryService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TimeSlotController extends Controller
 {
@@ -34,7 +36,10 @@ class TimeSlotController extends Controller
             'capacity'   => 'required|integer|min:1',
         ]);
 
-        $date->timeSlots()->create($data);
+        DB::transaction(function () use ($data, $date) {
+            $timeslot = $date->timeSlots()->create($data);
+            InventoryService::createForTimeSlot($timeslot);
+        });
 
         return response()->json([
             'message'   => 'TimeSlot added successfully!',

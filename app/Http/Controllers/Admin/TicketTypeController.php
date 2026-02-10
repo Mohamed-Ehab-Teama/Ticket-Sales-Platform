@@ -6,6 +6,9 @@ use App\Models\Event;
 use App\Models\TicketType;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Inventory;
+use App\Services\InventoryService;
+use Illuminate\Support\Facades\DB;
 
 class TicketTypeController extends Controller
 {
@@ -29,7 +32,14 @@ class TicketTypeController extends Controller
             'valid_to'      => 'nullable|date|after_or_equal:valid_from',
         ]);
 
-        $event->ticketTypes()->create($data);
+        DB::transaction(function () use ($data, $event) {
+            // 
+            $ticketType = $event->ticketTypes()->create($data);
+
+            InventoryService::createForTicketType($ticketType);
+
+            return $ticketType;
+        });
 
         return response()->json([
             'message'   => 'Ticket type created successfully!',

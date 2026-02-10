@@ -112,6 +112,10 @@
 
                 </tbody>
             </table>
+
+            <div class="mt-3">
+                {{ $events->links('pagination::bootstrap-5') }}
+            </div>
         </div>
     </div>
 @endsection

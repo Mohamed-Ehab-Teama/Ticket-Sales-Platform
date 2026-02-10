@@ -22,6 +22,8 @@ return new class extends Migration
             $table->date('valid_from')->nullable();
             $table->date('valid_to')->nullable();
             $table->timestamps();
+
+            $table->unique(['event_id', 'name']);
         });
     }
 

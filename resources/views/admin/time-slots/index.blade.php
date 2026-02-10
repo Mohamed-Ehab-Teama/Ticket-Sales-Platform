@@ -55,6 +55,10 @@
                     @endforelse
                 </tbody>
             </table>
+
+            <div class="mt-3">
+                {{ $timeSlots->links('pagination::bootstrap-5') }}
+            </div>
         </div>
     </div>
 @endsection

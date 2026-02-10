@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\EventDate;
+use App\Services\InventoryService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class EventDateController extends Controller
 {
@@ -25,7 +27,10 @@ class EventDateController extends Controller
             'date' => 'required|date|after_or_equal:today',
         ]);
 
-        $event->dates()->create($data);
+        DB::transaction(function () use ($data, $event) {
+            $date = $event->dates()->create($data);
+            InventoryService::createForEventDate($date);
+        });
 
         return response()->json([
             'message'   => 'EventDate created successfully!',
