@@ -7,91 +7,125 @@ use App\Models\CartItem;
 use App\Models\Inventory;
 use Illuminate\Support\Facades\DB;
 use App\Models\InventoryReservation;
+use Exception;
 use Illuminate\Container\Attributes\Auth;
 
 class CartService
 {
-    // public function viewCart()
-    // {
-    //     $cart = Auth::user()
-    //         ->cart()
-    //         ->with('items.inventory.ticketType', 'items.inventory.timeSlot')
-    //         ->first();
-    // }
+    const RESERVATION_MINUTES = 15;
 
-
-
-
-
-    public static function addToCart($user, Inventory $inventory, int $qty)
+    public static function getUserCart($user)
     {
-        if ($qty <= 0) throw new \Exception('Quantity must be greater than zero');
+        return Cart::firstOrCreate(['user_id' => $user->id]);
+    }
 
 
-        return DB::transaction(function () use ($user, $inventory, $qty) {
-            // 🔒 Lock inventory row
-            $inventory = Inventory::where('id', $inventory->id)
-                ->lockForUpdate()
-                ->first();
+    public static function add($user, $inventoryId, $quantity)
+    {
+        return DB::transaction(function () use ($user, $inventoryId, $quantity) {
 
-            if ($inventory->available_quantity < $qty) {
-                throw new \Exception('Not enough tickets available');
+            self::cleanupExpired($inventoryId);
+
+            $inventory = Inventory::lockForUpdate()->findOrFail($inventoryId);
+
+            $reserved = InventoryReservation::where('inventory_id', $inventoryId)
+                ->where('expires_at', '>', now())
+                ->sum('quantity');
+
+            $available = $inventory->total_quantity
+                - $inventory->sold_quantity
+                - $reserved;
+
+            if ($quantity > $available) {
+                throw new Exception("Only $available tickets available.");
             }
 
-            $cart = Cart::firstOrCreate([
-                'user_id' => $user->id
+            $cart = self::getUserCart($user);
+
+            // reservation
+            InventoryReservation::create([
+                'inventory_id' => $inventoryId,
+                'cart_id'      => $cart->id,
+                'quantity'     => $quantity,
+                'expires_at'   => now()->addMinutes(self::RESERVATION_MINUTES),
             ]);
 
-
-            /** 🔒 Lock cart item row */
-            $item = CartItem::where([
-                'cart_id'      => $cart->id,
-                'inventory_id' => $inventory->id,
-            ])
-                ->lockForUpdate()
+            $item = CartItem::where('cart_id', $cart->id)
+                ->where('inventory_id', $inventoryId)
                 ->first();
 
             if ($item) {
-                $item->quantity += $qty;
-                $item->save();
+                $item->increment('quantity', $quantity);
             } else {
                 $item = CartItem::create([
-                    'cart_id'      => $cart->id,
-                    'inventory_id' => $inventory->id,
-                    'quantity'     => $qty,
-                    'price'        => $inventory->ticketType->price,
+                    'cart_id' => $cart->id,
+                    'inventory_id' => $inventoryId,
+                    'quantity' => $quantity,
+                    'price' => $inventory->ticketType->price,
                 ]);
             }
-
-
-            // Create / update reservation
-            InventoryReservation::updateOrCreate(
-                [
-                    'inventory_id' => $inventory->id,
-                    'cart_id' => $cart->id,
-                ],
-                [
-                    'quantity' => $item->quantity,
-                    'expires_at' => now()->addMinutes(15),
-                ]
-            );
 
             return $item;
         });
     }
 
 
+    public static function update($cartItem, $newQuantity)
+    {
+        return DB::transaction(function () use ($cartItem, $newQuantity) {
+
+            $inventory = Inventory::lockForUpdate()->findOrFail($cartItem->inventory_id);
+
+            self::cleanupExpired($inventory->id);
+
+            $reserved = InventoryReservation::where('inventory_id', $inventory->id)
+                ->where('expires_at', '>', now())
+                ->sum('quantity');
+
+            $available = $inventory->total_quantity
+                - $inventory->sold_quantity
+                - $reserved
+                + $cartItem->quantity;
+
+            if ($newQuantity > $available) {
+                throw new Exception("Only $available tickets available.");
+            }
+
+            $difference = $newQuantity - $cartItem->quantity;
+
+            if ($difference > 0) {
+                InventoryReservation::create([
+                    'inventory_id' => $inventory->id,
+                    'cart_id'      => $cartItem->cart_id,
+                    'quantity'     => $difference,
+                    'expires_at'   => now()->addMinutes(self::RESERVATION_MINUTES),
+                ]);
+            }
+
+            $cartItem->update(['quantity' => $newQuantity]);
+
+            return $cartItem;
+        });
+    }
 
 
-    // public function RemoveItem()
-    // {
-    //     DB::transaction(function () use ($item) {
-    //         InventoryReservation::where([
-    //             'cart_id' => $item->cart_id,
-    //             'inventory_id' => $item->inventory_id,
-    //         ])->delete();
+    public static function remove($cartItem)
+    {
+        return DB::transaction(function () use ($cartItem) {
 
-    //         $item->delete();
-    //     });
-    // }
+            InventoryReservation::where('inventory_id', $cartItem->inventory_id)
+                ->where('cart_id', $cartItem->cart_id)
+                ->delete();
+
+            $cartItem->delete();
+        });
+    }
+
+    
+    public static function cleanupExpired($inventoryId)
+    {
+        InventoryReservation::where('inventory_id', $inventoryId)
+            ->where('expires_at', '<', now())
+            ->delete();
+    }
 }

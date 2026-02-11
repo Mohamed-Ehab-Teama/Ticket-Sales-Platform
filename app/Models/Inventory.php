@@ -28,7 +28,7 @@ class Inventory extends Model
 
 
     // Accessors
-    public function getAvailableAttribute()
+    public function getAvailableAttribute() 
     {
         return ($this->total_quantity - $this->sold_quantity) ?? 0;
     }

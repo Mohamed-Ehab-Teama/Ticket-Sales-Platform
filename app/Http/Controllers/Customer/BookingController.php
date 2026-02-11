@@ -71,16 +71,17 @@ class BookingController extends Controller
                 $inventory = $ticket->inventories->first();
 
                 return [
-                    'id'        => $ticket->id,
+                    'inventory_id' => $inventory?->id,
+                    // 'id'        => $ticket->id,
                     'name'      => $ticket->name,
                     'price'     => $ticket->price,
-                    'available' => $inventory->available,
+                    // 'available' => $inventory->available,
                     // 'available' => $inventory?->available ?? 0,
-                    // 'available' => max(
-                    //     0,
-                    //     ($inventory->total_quantity ?? 0)
-                    //         - ($inventory->sold_quantity ?? 0)
-                    // ),
+                    'available' => max(
+                        0,
+                        ($inventory->total_quantity ?? 0)
+                            - ($inventory->sold_quantity ?? 0)
+                    ),
                     'min' => $ticket->min_per_order,
                     'max' => $ticket->max_per_order,
                 ];

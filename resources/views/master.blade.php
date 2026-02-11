@@ -12,6 +12,19 @@
         <!-- Top Navbar -->
         @include('partials.navbar')
 
+
+        {{-- Error & Success Messages --}}
+        @foreach (['success', 'error'] as $msg)
+            @if(session($msg))
+                <div class="alert alert-{{ $msg === 'success' ? 'success' : 'danger' }}">
+                    {{ session($msg) }}
+                </div>
+            @endif
+        @endforeach
+
+        {{-- Error & Success Messages --}}
+
+
         <!-- Content Wrapper -->
         <div class="content-wrapper">
 
@@ -22,13 +35,13 @@
             </div>
 
             @yield('content')
-            
+
         </div>
     </div>
 
     @yield('modals')
 
-    
+
     {{-- Scripts --}}
     @include('partials.scripts')
     @yield('scripts')

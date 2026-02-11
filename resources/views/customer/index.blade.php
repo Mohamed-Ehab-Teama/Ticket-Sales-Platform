@@ -28,6 +28,11 @@
         </div>
 
         <div id="ticketsContainer" class="mt-4"></div>
+
+
+        {{-- <form action="{{ route('paypal.create', $order->id) }}" method="GET">
+            <button class="btn btn-primary">Pay with PayPal</button>
+        </form> --}}
     </div>
 @endsection
 
@@ -88,19 +93,32 @@
                         html += '<thead><tr><th>Ticket</th><th>Price</th><th>Available</th><th>Quantity</th><th></th></tr></thead><tbody>';
 
                         tickets.forEach(ticket => {
+
+                            let disabled = ticket.available == 0 ? 'disabled' : '';
+                            let maxQty = Math.min(ticket.max, ticket.available);
+
                             html += `<tr>
-                                <td>${ticket.name}</td>
-                                <td>${ticket.price} EGP</td>
-                                <td>${ticket.available}</td>
-                                <td>
-                                    <input type="number" min="${ticket.min}" max="${Math.min(ticket.max, ticket.available)}" class="form-control" ${ticket.available == 0 ? 'disabled' : ''}>
-                                </td>
-                                <td>
-                                    <button class="btn btn-primary" ${ticket.available == 0 ? 'disabled' : ''}>
-                                        Add to Cart
-                                    </button>
-                                </td>
-                            </tr>`;
+                                                <td>${ticket.name}</td>
+                                                <td>${ticket.price} EGP</td>
+                                                <td>${ticket.available}</td>
+                                                <td>
+                                                    <input type="number"
+                                                        min="${ticket.min}"
+                                                        max="${maxQty}"
+                                                        value="${ticket.min}"
+                                                        class="form-control ticket-qty"
+                                                        data-inventory="${ticket.inventory_id}"
+                                                        ${disabled}>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-primary add-to-cart-btn"
+                                                            data-inventory="${ticket.inventory_id}"
+                                                            ${disabled}>
+                                                        Add to Cart
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `;
                         });
 
                         html += '</tbody></table>';
@@ -109,5 +127,55 @@
                 }
             });
         });
+    </script>
+
+
+    <script>
+        // ADD TO CART
+        $(document).on('click', '.add-to-cart-btn', function () {
+
+            let button = $(this);
+            let inventoryId = button.data('inventory');
+
+            let quantityInput = $(`input.ticket-qty[data-inventory="${inventoryId}"]`);
+            let quantity = quantityInput.val();
+
+            button.prop('disabled', true).text('Adding...');
+
+            $.ajax({
+                url: "{{ route('cart.add') }}",
+                method: "POST",
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    inventory_id: inventoryId,
+                    quantity: quantity
+                },
+
+                success: function (response) {
+
+                    button.prop('disabled', false).text('Add to Cart');
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Added to Cart!',
+                        timer: 1200,
+                        showConfirmButton: false
+                    });
+
+                },
+
+                error: function (xhr) {
+
+                    button.prop('disabled', false).text('Add to Cart');
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: xhr.responseJSON?.message ?? 'Something went wrong'
+                    });
+                }
+            });
+        });
+
     </script>
 @endsection

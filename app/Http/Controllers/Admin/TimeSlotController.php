@@ -17,7 +17,7 @@ class TimeSlotController extends Controller
         // Ensure date belongs to event
         abort_unless($date->event_id === $event->id, 404);
 
-        $timeSlots = $date->timeSlots()->latest()->get();
+        $timeSlots = $date->timeSlots()->latest()->paginate(15);
 
         return view('admin.time-slots.index', compact(
             'event',

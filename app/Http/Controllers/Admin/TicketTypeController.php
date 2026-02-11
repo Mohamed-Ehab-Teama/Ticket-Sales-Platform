@@ -15,7 +15,7 @@ class TicketTypeController extends Controller
     //
     public function index(Event $event)
     {
-        $ticketTypes = $event->ticketTypes()->latest()->get();
+        $ticketTypes = $event->ticketTypes()->latest()->paginate(15);
         return view('admin.ticket-types.index', compact('event', 'ticketTypes'));
     }
 

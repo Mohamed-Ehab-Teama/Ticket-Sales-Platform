@@ -87,6 +87,18 @@
                     </a>
                 </div>
             </div>
+            
+            
+            <div class="nav-section">
+                {{-- <div class="nav-section-title"> View Cart </div> --}}
+                <div class="nav-item">
+                    <a href="{{ route('cart.index') }}"
+                        class="nav-link {{ Route::is('cart.index') ? 'active' : '' }}">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span> View Cart </span>
+                    </a>
+                </div>
+            </div>
         @endcan
 
         {{-- <div class="nav-section">
